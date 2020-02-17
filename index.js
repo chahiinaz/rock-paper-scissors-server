@@ -14,9 +14,6 @@ app.use(corsMiddleware);
 const parserMiddleware = bodyParser.json();
 app.use(parserMiddleware);
 
-const authMiddleware = require("./auth/middleWare");
-app.use(authMiddleware);
-
 app.use(userRouter);
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
