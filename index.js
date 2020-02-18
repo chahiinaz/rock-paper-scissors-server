@@ -13,14 +13,30 @@ app.use(parserMiddleware);
 //Stream setup
 const Sse = require("json-sse");
 const stream = new Sse();
+const Gameroom = require("./gameroom/model");
 
 app.get("/test", (req, res) => {
   stream.send("test");
   res.send("hello");
 });
 
-app.get("/stream", (req, res) => {
-  stream.init(req, res);
+//Get all gamerooms in the stream
+app.get("/stream", async (req, res, next) => {
+  try {
+    const gamerooms = await Gameroom.findAll();
+
+    const action = {
+      type: "ALL_GAMEROOMS",
+      payload: gamerooms
+    };
+    const string = JSON.stringify(action);
+
+    stream.updateInit(string);
+    stream.init(req, res);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
 });
 
 //Insert gameroom factory into stream
