@@ -9,10 +9,13 @@ function factory(stream) {
     try {
       const gameroom = await Gameroom.create(req.body);
 
+      const { user } = req;
+      console.log("user", user);
       const action = {
         type: "NEW_GAMEROOM",
         payload: gameroom
       };
+
       const string = JSON.stringify(action);
       stream.send(string);
       res.send(gameroom);
