@@ -44,6 +44,10 @@ const gameroomFactory = require("./gameroom/router");
 const gameroomRouter = gameroomFactory(stream);
 app.use(gameroomRouter);
 
+const joinFactory = require("./join/router");
+const joinRouter = joinFactory(stream);
+app.use(joinRouter);
+
 const userRouter = require("./user/router");
 app.use(userRouter);
 
