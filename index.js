@@ -42,11 +42,7 @@ app.get("/stream", async (req, res, next) => {
 //Insert gameroom factory into stream
 const gameroomFactory = require("./gameroom/router");
 const gameroomRouter = gameroomFactory(stream);
-app.use(gameroomRouter);
-
-const joinFactory = require("./join/router");
-const joinRouter = joinFactory(stream);
-app.use(joinRouter);
+app.use (gameroomRouter);
 
 const userRouter = require("./user/router");
 app.use(userRouter);

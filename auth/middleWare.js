@@ -10,7 +10,7 @@ async function auth(request, response, next) {
     try {
       const data = toData(auth[1]);
       console.log("Data test:", data);
-      await User.findByPk(data.id);
+      const user = await User.findByPk(data.id);
       if (!user) return next("User does not exist");
       request.user = user;
       next();

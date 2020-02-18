@@ -1,10 +1,11 @@
 const { Router } = require("express");
 const Gameroom = require("./model");
+const authMiddleware = require("../auth/middleWare");
 
 function factory(stream) {
   const router = new Router();
   //Post gameroom
-  router.post("/gameroom", async (req, res, next) => {
+  router.post("/gameroom", authMiddleware, async (req, res, next) => {
     try {
       const gameroom = await Gameroom.create(req.body);
 
@@ -20,7 +21,7 @@ function factory(stream) {
     }
   });
   //Get gameroom from stream by id
-  router.get("/gameroom/:id", async (req, res, next) => {
+  router.get("/gameroom/:id", authMiddleware, async (req, res, next) => {
     try {
       const gameroom = await Gameroom.findByPk(req.params.id);
       const action = {
@@ -35,6 +36,31 @@ function factory(stream) {
       next(error);
     }
   });
+
+  //Join router to add users in gameroom
+  router.put("/join", authMiddleware, async (request, response, next) => {
+    try {
+      const user = await request.user.update({
+        gameroomId: request.body.gameroomId
+      });
+
+      const everything = await Gameroom.findAll({ include: [User] });
+
+      const action = {
+        type: "ALL_GAMEROOMS",
+        payload: everything
+      };
+
+      const string = JSON.stringify(action);
+
+      stream.send(string);
+
+      response.send(user);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   return router;
 }
 
