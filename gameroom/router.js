@@ -45,22 +45,24 @@ function factory(stream) {
   //Join router to add users in gameroom
   router.put("/join", authMiddleware, async (request, response, next) => {
     try {
-      const user = await request.user.update({
-        gameroomId: request.body.gameroomId
+      const player = await Player.create({
+        gameroomId: request.body.gameroomId,
+        userId: request.user.id
       });
 
-      const everything = await Gameroom.findAll({ include: [User] });
+      const everything = await Gameroom.findAll({ include: [Player] });
 
       const action = {
         type: "ALL_GAMEROOMS",
         payload: everything
       };
+      // const player = await Player.create();
 
       const string = JSON.stringify(action);
 
       stream.send(string);
 
-      response.send(user);
+      response.send(player);
     } catch (error) {
       next(error);
     }
