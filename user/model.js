@@ -1,5 +1,6 @@
 const Sequelize = require("sequelize");
 const db = require("../db.js");
+const Player = require("../player/model");
 
 const User = db.define("user", {
   username: { type: Sequelize.STRING, allowNull: true },
@@ -8,6 +9,6 @@ const User = db.define("user", {
   rounds: { type: Sequelize.INTEGER }
 });
 
-User.belongsTo(Player);
+// User.belongsTo(Player);
 
 module.exports = User;
