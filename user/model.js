@@ -11,4 +11,7 @@ const User = db.define("user", {
 
 // User.belongsTo(Player);
 
+Player.belongsTo(User);
+User.hasMany(Player);
+
 module.exports = User;

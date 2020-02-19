@@ -1,6 +1,7 @@
 const Sequelize = require("sequelize");
 const db = require("../db.js");
 const Gameroom = require("../gameroom/model");
+const User = require("../user/model");
 
 const Player = db.define("player", {
   choice: {

@@ -10,8 +10,8 @@ const Gameroom = db.define("gameroom", {
   }
 });
 
-// Gameroom.hasMany(Player);
-// Player.belongsTo(Gameroom);
+Gameroom.hasMany(Player);
+Player.belongsTo(Gameroom);
 
 User.belongsTo(Gameroom);
 Gameroom.hasMany(User);
