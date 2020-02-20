@@ -32,7 +32,16 @@ function factory(stream) {
   //Get gameroom from stream by id
   router.get("/gameroom/:id", authMiddleware, async (req, res, next) => {
     try {
-      const gameroom = await Gameroom.findByPk(req.params.id);
+      const gameroom = await Gameroom.findAll({
+        where: {
+          id: req.params.id
+        },
+        include: [
+          { model: Player }
+        ]
+      })
+      console.log("gameroom!!!\n\n\n\n\n\n\n", gameroom)
+      // const gameroom = await Gameroom.findByPk(req.params.id);
       const action = {
         type: "ONE_GAMEROOM",
         payload: gameroom
@@ -94,10 +103,20 @@ function factory(stream) {
   });
 
   router.put("/player/:choice", authMiddleware, async (req, res, next) => {
-    const player = req.player;
+    const player = req.body.player;
+    console.log('player????', player)
 
-    const gameroom = await Gameroom.findByPk(player.gameroomId);
+    // const gameroom = await Gameroom.findByPk(player.gameroomId);
     const { choice } = req.params;
+
+    const gameroom = await Gameroom.findAll({
+      where: {
+        id: req.params.id
+      },
+      include: [
+        { model: Player }
+      ]
+    })
 
     await player.update({ choice: choice });
     const playersInGame = await Player.findAll({
@@ -116,7 +135,7 @@ function factory(stream) {
           game_won: winner.game_won + 1
         });
       }
-      res.send({ chosen });
+      res.send({ chosen, gameroom });
     }
   });
 
