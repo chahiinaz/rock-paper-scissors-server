@@ -7,7 +7,8 @@ const Gameroom = db.define("gameroom", {
   name: {
     type: Sequelize.STRING,
     allowNull: false
-  }
+  },
+  round: Sequelize.INTEGER
 });
 
 Gameroom.hasMany(Player);
