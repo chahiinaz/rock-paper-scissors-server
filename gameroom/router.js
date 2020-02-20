@@ -96,4 +96,44 @@ function factory(stream) {
   return router;
 }
 
+function gameLogic(players) {
+  const playerOne = players[0];
+  const playerTwo = players[1];
+  const choiceOne = playerOne.choice;
+  const choiceTwo = playerTwo.choice;
+
+  const playerOneWinner = {
+    winner: playerOne,
+    loser: playerTwo
+  };
+
+  const playerTwoWinner = {
+    winner: playerTwo,
+    loser: playerOne
+  };
+
+  if (choiceOne === choiceTwo) {
+    return null;
+  }
+  if (choiceOne === "rock") {
+    if (choiceTwo === "paper") {
+      return playerTwoWinner;
+    } else {
+      return playerOneWinner;
+    }
+  }
+  if (choiceOne === "paper") {
+    if (choiceTwo === "scissors") {
+      return playerTwoWinner;
+    } else {
+      return playerOneWinner;
+    }
+  }
+  if (choiceTwo === "rock") {
+    return playerTwoWinner;
+  } else {
+    return playerOneWinner;
+  }
+}
+
 module.exports = factory;

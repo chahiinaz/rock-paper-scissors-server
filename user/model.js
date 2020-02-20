@@ -6,7 +6,7 @@ const User = db.define("user", {
   username: { type: Sequelize.STRING, allowNull: true },
   email: { type: Sequelize.STRING, unique: true, allowNull: false },
   password: { type: Sequelize.STRING, allowNull: false },
-  rounds_won: { type: Sequelize.INTEGER }
+  games_won: { type: Sequelize.INTEGER }
 });
 
 // User.belongsTo(Player);
