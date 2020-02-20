@@ -93,7 +93,74 @@ function factory(stream) {
     }
   });
 
+  router.put("/player/:choice", authMiddleware, async (req, res, next) => {
+    const player = req.player;
+
+    const gameroom = await Gameroom.findByPk(player.gameroomId);
+    const { choice } = req.params;
+
+    await player.update({ choice: choice });
+    const playersInGame = await Player.findAll({
+      where: { gameroomId: gameroom.id }
+    });
+
+    const chosen = playersInGame.every(player => player.choice);
+
+    if (chosen) {
+      const gameWinner = gameLogic(playersInGame);
+
+      if (gameWinner) {
+        const { winner } = gameWinner;
+        await winner.update({
+          points: winner.points + 1,
+          game_won: winner.game_won + 1
+        });
+      }
+      res.send({ chosen });
+    }
+  });
+
   return router;
+}
+
+function gameLogic(players) {
+  const playerOne = players[0];
+  const playerTwo = players[1];
+  const choiceOne = playerOne.choice;
+  const choiceTwo = playerTwo.choice;
+
+  const playerOneWinner = {
+    winner: playerOne,
+    loser: playerTwo
+  };
+
+  const playerTwoWinner = {
+    winner: playerTwo,
+    loser: playerOne
+  };
+
+  if (choiceOne === choiceTwo) {
+    return null;
+  }
+  if (choiceOne === "rock") {
+    if (choiceTwo === "paper") {
+      return playerTwoWinner;
+    } else {
+      return playerOneWinner;
+    }
+  }
+  if (choiceOne === "paper") {
+    if (choiceTwo === "scissors") {
+      return playerTwoWinner;
+    } else {
+      return playerOneWinner;
+    }
+  }
+  if (choiceTwo === "rock") {
+    return playerTwoWinner;
+  } else {
+    return playerOneWinner;
+  }
 }
 
 module.exports = factory;

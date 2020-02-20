@@ -9,7 +9,8 @@ const Player = db.define("player", {
     values: ["rock", "paper", "scissors", "no choice"],
     defaultValue: "no choice"
   },
-  points: { type: Sequelize.INTEGER, defaultValue: 0 }
+  points: { type: Sequelize.INTEGER, defaultValue: 0 },
+  game_won: Sequelize.INTEGER
 });
 
 module.exports = Player;
