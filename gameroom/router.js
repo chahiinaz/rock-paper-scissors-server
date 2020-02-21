@@ -11,7 +11,7 @@ function factory(stream) {
     try {
       const { name } = req.body;
       const gameroom = await Gameroom.create({ name, round: 0 });
-      console.log("game?", gameroom);
+      // console.log("game?", gameroom);
 
       // const { user } = req;
 
@@ -38,7 +38,7 @@ function factory(stream) {
         },
         include: [{ model: Player }]
       });
-      console.log("gameroom!!!\n\n\n\n\n\n\n", gameroom);
+      // console.log("gameroom!!!\n\n\n\n\n\n\n", gameroom);
       // const gameroom = await Gameroom.findByPk(req.params.id);
       const action = {
         type: "ONE_GAMEROOM",
@@ -68,22 +68,22 @@ function factory(stream) {
           gameroomId: request.body.gameroomId,
           userId: request.user.id
         });
-        console.log("create new player");
+        // console.log("create new player");
       } else {
         player.update({ gameroomId: reqGameroomId, choice: "no_choice" });
       }
 
       const everything = await Gameroom.findAll({ include: [Player] });
-      console.log("everything", everything);
+      // console.log("everything", everything);
 
       const action = {
         type: "ALL_GAMEROOMS",
         payload: everything
       };
 
-      console.log("action", action, action.payload);
+      // console.log("action", action, action.payload);
       const string = JSON.stringify(action);
-      console.log("string", string);
+      // console.log("string", string);
 
       stream.send(string);
 
@@ -114,7 +114,7 @@ function factory(stream) {
   router.put("/player/:choice", authMiddleware, async (req, res, next) => {
     const { playerId, gameRoomId } = req.body;
     const { choice } = req.params;
-    console.log("player????", playerId, choice, req.user.id, gameRoomId);
+    // console.log("player????", playerId, choice, req.user.id, gameRoomId);
 
     // const gameroom = await Gameroom.findByPk(player.gameroomId);
     await Player.update(
@@ -122,55 +122,68 @@ function factory(stream) {
       { where: { userId: req.user.id, gameroomId: gameRoomId } }
     );
 
-    const gameroom = await Gameroom.findAll({
-      where: {
-        id: gameRoomId
-      },
-      include: [{ model: Player }]
-    });
-
-    // Here check if all players in the room have made a choice.
-    // If they didn't, end of route.
-
-    // if they did:
-
-    // see who won.
-    // store the points
-    // +1 to gamerooom round
-    // clear player choices
-    // send gameroom with players updated (score)
-
-    console.log("gameroom", gameroom);
+    // console.log("gameroom????", gameroom);
+    // console.log("gameroom.players????", gameroom.dataValues.players);
 
     const playersInGame = await Player.findAll({
       where: { gameroomId: gameRoomId }
     });
 
-    // if (playersInGame.choice == "no_choice"){
-    //   return
-    // }
+    // console.log("players in game ? ", playersInGame);
+    const chosen = playersInGame.every(
+      player =>
+        player.choice === "rock" ||
+        player.choice === "paper" ||
+        player.choice === "scissors"
+    );
 
-    // const chosen = playersInGame.every(player => {
-    //   console.log("every player", player.dataValues.choice);
-    //   return player.dataValues.choice;
-    // });
+    if (chosen) {
+      const gameWinner = gameLogic(playersInGame);
+      console.log("game winner?", gameWinner);
 
-    // if (chosen) {
-    //   const gameWinner = gameLogic(playersInGame);
+      if (gameWinner) {
+        const { winner, loser } = gameWinner;
+        await Player.update(
+          {
+            points: winner.points + 1,
+            game_won: winner.game_won + 1
+          },
+          { where: { id: winner.id } }
+        );
+      }
 
-    //   if (gameWinner) {
-    //     const { winner } = gameWinner;
-    //     await winner.update({
-    //       points: winner.points + 1,
-    //       game_won: winner.game_won + 1
-    //     });
-    //   }
-    //   res.send({ chosen, gameroom });
-    // }
+      const resetPlayerChoice = await Player.update(
+        { choice: "no_choice" },
+        { where: { gameroomId: gameRoomId } }
+      );
+      const gameroom = await Gameroom.findAll({
+        where: {
+          id: gameRoomId
+        },
+        include: [{ model: Player }]
+      });
+
+      const action = {
+        type: "ALL_GAMEROOMS",
+        payload: everything
+      };
+
+      // console.log("action", action, action.payload);
+      const string = JSON.stringify(action);
+      // console.log("string", string);
+
+      stream.send(string);
+    }
   });
 
   return router;
 }
+
+// see who won.
+// store the points
+// +1 to gamerooom round
+// clear player choices
+// send gameroom with players updated (score)
 
 function gameLogic(players) {
   const playerOne = players[0];
