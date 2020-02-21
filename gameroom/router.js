@@ -58,25 +58,23 @@ function factory(stream) {
     try {
       const reqGameroomId = request.body.gameroomId;
 
-      const player = await Player.findOne({
+      let player = await Player.findOne({
+        // me => null at the start.
         where: { gameroomId: reqGameroomId, userId: request.user.id }
       });
-      console.log("player", player);
-      const gameroom = await Gameroom.findByPk(reqGameroomId);
-      console.log("gameroom", gameroom);
+
+      if (!player) {
+        player = await Player.create({
+          gameroomId: request.body.gameroomId,
+          userId: request.user.id
+        });
+        console.log("create new player");
+      } else {
+        player.update({ gameroomId: reqGameroomId, choice: "no_choice" });
+      }
+
       const everything = await Gameroom.findAll({ include: [Player] });
       console.log("everything", everything);
-      const playersInGame = await Player.findAndCountAll({
-        where: { gameroomId: reqGameroomId }
-      });
-
-      // if (playersInGame.count >= 1) {
-      //   const roomUpdatedRound = await gameroom.update({
-      //     round: ++gameroom.round
-      //   });
-      //   console.log("increment round");
-      //   return response.send(roomUpdatedRound);
-      // }
 
       const action = {
         type: "ALL_GAMEROOMS",
@@ -89,29 +87,37 @@ function factory(stream) {
 
       stream.send(string);
 
-      if (!player) {
-        const newPlayer = await Player.create({
-          gameroomId: request.body.gameroomId,
-          userId: request.user.id
-        });
-        console.log("create new player");
-        response.send(newPlayer);
-      } else if (player) {
-        console.log("send existing player");
-        response.send(player);
-      }
+      // console.log("player", player);
+      // const gameroom = await Gameroom.findByPk(reqGameroomId);
+      // console.log("gameroom", gameroom);
+
+      // const playersInGame = await Player.findAndCountAll({
+      //   where: { gameroomId: reqGameroomId }
+      // });
+
+      // console.log("players in game???", playersInGame);
+
+      // if (playersInGame.count >= 1) {
+      //   const roomUpdatedRound = await gameroom.update({
+      //     round: ++gameroom.round
+      //   });
+      //   console.log("increment round");
+      //   return response.send(roomUpdatedRound);
+      // }
+
+      response.send("joined room");
     } catch (error) {
       next(error);
     }
   });
 
   router.put("/player/:choice", authMiddleware, async (req, res, next) => {
-    const playerId = req.body.playerId;
-    const gameRoomId = req.body.gameRoomId;
+    const { playerId, gameRoomId } = req.body;
+    const { choice } = req.params;
     console.log("player????", playerId);
 
     // const gameroom = await Gameroom.findByPk(player.gameroomId);
-    const { choice } = req.params;
+    await Player.update({ choice: choice }, { where: { id: playerId } });
 
     const gameroom = await Gameroom.findAll({
       where: {
@@ -120,9 +126,19 @@ function factory(stream) {
       include: [{ model: Player }]
     });
 
+    // Here check if all players in the room have made a choice.
+    // If they didn't, end of route.
+
+    // if they did:
+
+    // see who won.
+    // store the points
+    // +1 to gamerooom round
+    // clear player choices
+    // send gameroom with players updated (score)
+
     console.log("gameroom", gameroom);
 
-    await Player.update({ choice: choice }, { where: { id: playerId } });
     const playersInGame = await Player.findAll({
       where: { gameroomId: gameRoomId }
     });

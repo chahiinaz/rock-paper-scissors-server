@@ -6,8 +6,8 @@ const User = require("../user/model");
 const Player = db.define("player", {
   choice: {
     type: Sequelize.ENUM,
-    values: ["rock", "paper", "scissors", "no choice"],
-    defaultValue: "no choice"
+    values: ["rock", "paper", "scissors", "no_choice"],
+    defaultValue: "no_choice"
   },
   points: { type: Sequelize.INTEGER, defaultValue: 0 },
   game_won: Sequelize.INTEGER
