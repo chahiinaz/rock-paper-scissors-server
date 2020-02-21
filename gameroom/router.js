@@ -114,10 +114,13 @@ function factory(stream) {
   router.put("/player/:choice", authMiddleware, async (req, res, next) => {
     const { playerId, gameRoomId } = req.body;
     const { choice } = req.params;
-    console.log("player????", playerId);
+    console.log("player????", playerId, choice, req.user.id, gameRoomId);
 
     // const gameroom = await Gameroom.findByPk(player.gameroomId);
-    await Player.update({ choice: choice }, { where: { id: playerId } });
+    await Player.update(
+      { choice: choice },
+      { where: { userId: req.user.id, gameroomId: gameRoomId } }
+    );
 
     const gameroom = await Gameroom.findAll({
       where: {
@@ -143,23 +146,27 @@ function factory(stream) {
       where: { gameroomId: gameRoomId }
     });
 
-    const chosen = playersInGame.every(player => {
-      console.log("every player", player.dataValues.choice);
-      return player.dataValues.choice;
-    });
+    // if (playersInGame.choice == "no_choice"){
+    //   return
+    // }
 
-    if (chosen) {
-      const gameWinner = gameLogic(playersInGame);
+    // const chosen = playersInGame.every(player => {
+    //   console.log("every player", player.dataValues.choice);
+    //   return player.dataValues.choice;
+    // });
 
-      if (gameWinner) {
-        const { winner } = gameWinner;
-        await winner.update({
-          points: winner.points + 1,
-          game_won: winner.game_won + 1
-        });
-      }
-      res.send({ chosen, gameroom });
-    }
+    // if (chosen) {
+    //   const gameWinner = gameLogic(playersInGame);
+
+    //   if (gameWinner) {
+    //     const { winner } = gameWinner;
+    //     await winner.update({
+    //       points: winner.points + 1,
+    //       game_won: winner.game_won + 1
+    //     });
+    //   }
+    //   res.send({ chosen, gameroom });
+    // }
   });
 
   return router;
